@@ -1,166 +1,183 @@
-#include<iostream>
+#include <bits/stdc++.h>
+
 using namespace std;
 
-// +, -, *, /, ==, <, >
-class Frac {
-    int n;
-    int d;
+class MyVec {
+    int size;
+    int capacity;
+    int *elements;
+
+    void _copy(const MyVec& orig);
+
 public:
-    int N () const { return this->n; }
-    int D () const { return this->d; }
-    void setN(int x) {this->n = x; }
-    void setD(int x) {
-        if (x==0) {
-            throw invalid_argument("GRESKA, NEMOZE 0");
-        }
-        this->d = x;
-    }
-
-    Frac(const int n, const int d=1) {
-        this->n = n;
-        this->d = d;
-    }
-
-    // Copy C-tor
-    Frac (const Frac& orig) {
-        this->n = orig.n;
-        this->d = orig.d;
-    }
-
-    Frac& operator=(const Frac& orig) {
-        if (this!=&orig) { // No Self-assignment
-            this->n = orig.n;
-            this->d = orig.d;
-        }
-        return *this;
-    }
-
-
-
-
-
-    void print() {
-        cout<<this->n <<"/" << this->d;
-    }
-
-    Frac operator*(const Frac& b) const {
-        Frac c(*this);
-        c.setN(this->N() * b.N());
-        c.setD(this->D() * b.D());
-        return c;
-    }
-
-    Frac operator+(const Frac& b) const{
-        Frac c(*this);
-        if (this->D()==b.D()) {
-            c.setD(this->D());
-            c.setN(this->N()+b.N());
-        }else {
-            c.setN(this->N()*b.D() + this->D()*b.N());
-            c.setD(this->D()*b.D());
-        }
-        int a=c.N(), d=c.D();
-        while (d != 0) {
-            int temp = d;
-            d = a % d;
-            a = temp;
-        }
-        c.setD(c.D()/a);
-        c.setN(c.N()/a);
-        return c;
-    }
-    Frac operator-(const Frac& b) const{
-        Frac c(*this);
-        if (this->D()==b.D()) {
-            c.setD(this->D());
-            c.setN(this->N()-b.N());
-        }else {
-            c.setN(this->N()*b.D() - this->D()*b.N());
-            c.setD(this->D()*b.D());
-        }
-        int a=c.N(), d=c.D();
-        while (d != 0) {
-            int temp = d;
-            d = a % d;
-            a = temp;
-        }
-        c.setD(c.D()/a);
-        c.setN(c.N()/a);
-        return c;
-    }
-
-    Frac operator/(const Frac& b) const {
-        Frac c(*this);
-        c.setN(this->N()*b.D());
-        c.setD(this->D()*b.N());
-        int a=c.N(), d=c.D();
-        while (d != 0) {
-            int temp = d;
-            d = a % d;
-            a = temp;
-        }
-        c.setD(c.D()/a);
-        c.setN(c.N()/a);
-        return c;
-    }
-
-    bool operator==(const Frac& b) const {
-        Frac c(*this);
-        Frac d(b);
-        c.setN(this->N()*b.D());
-        d.setN(this->D()*b.N());
-        return c.N()==d.N();
-    }
-    bool operator>(const Frac& b) const {
-        Frac c(*this);
-        Frac d(b);
-        c.setN(this->N()*b.D());
-        d.setN(this->D()*b.N());
-        return c.N()>d.N();
-    }
-    bool operator<(const Frac& b) const {
-        Frac c(*this);
-        Frac d(b);
-        c.setN(this->N()*b.D());
-        d.setN(this->D()*b.N());
-        return c.N()<d.N();
-    }
-
-    ~Frac() {}
-
+    MyVec(int size = 0, int value = 0);
+    ~MyVec();
+    MyVec(const MyVec& orig);
+    MyVec& operator=(const MyVec& orig);
+    void print();
+    void push(int val);
+    void pop();
+    int operator[](int i);
+    MyVec operator+(const MyVec & other) const;
+    void sort();
+    int& front();
+    int& back();
+    int* data();
+    void red_cap();
 };
 
-ostream& operator<<(ostream& o, const Frac& f) {
-    o<<f.N() <<"/" << f.D();
-    return o;
+MyVec::MyVec(int size, int value) {
+    int capacity = 4;
+    while (size >= capacity) {
+        capacity*=2;
+    }
+    elements = new int[capacity];
+    this->capacity = capacity;
+    this->size = size;
+    for (int i=0; i<this->size;i++ ) {
+        elements[i] = value;
+    }
 }
 
-// Frac operator*(const Frac& a, const Frac& b) {
-//     Frac c(a);
-//     c.setN(a.N() * b.N());
-//     c.setD(a.D() * b.D());
-//     return c;
-// }
+MyVec::~MyVec() {
+    delete [] elements;
+}
+
+void MyVec::_copy(const MyVec& orig) {
+    this->capacity = orig.capacity;
+    this->size = orig.size;
+    this->elements = new int[this->capacity];
+    for (int i=0; i<this->size; i++) {
+        this->elements[i] = orig.elements[i];
+    }
+}
+
+MyVec::MyVec(const MyVec& orig) {
+    _copy(orig);
+}
+MyVec& MyVec::operator=(const MyVec& orig) {
+    if (this != &orig) {
+        delete [] this->elements;
+        _copy(orig);
+    }
+    return *this;
+}
+
+void MyVec::print() {
+    cout<<"C: "<< this->capacity << " S: " << this->size <<":\n";
+    for (int i=0; i<this->size; i++) {
+        cout<<this->elements[i] << " ";
+    }
+    cout<<endl;
+}
+
+void MyVec::push(int val) {
+    if (this->size == this->capacity) {
+        int newcap = this->capacity*2;
+        int *tmp = new int[newcap];
+        for (int i=0; i<this->size; i++) {
+            tmp[i] = this->elements[i];
+        }
+        delete [] elements;
+        elements = tmp;
+        this->capacity = newcap;
+    }
+    this->elements[this->size] = val;
+    this->size++;
+}
+
+void MyVec::pop() {
+    if (this->size > 0) {
+        this->size--;
+        red_cap();
+    }
+}
+
+int MyVec::operator[](int i) {
+    if (i<0 || i > this->size-1) {
+        return 42;
+    }
+    return this->elements[i];
+}
+
+MyVec MyVec::operator+(const MyVec & other) const {
+    MyVec result(this->size + other.size);
+    result.size = this->size + other.size;
+    for (int i = 0; i < this->size; i++) {
+        result.elements[i] = this->elements[i];
+    }
+    for (int i = 0; i < other.size; i++) {
+        result.elements[this->size + i] = other.elements[i];
+    }
+    return result;
+}
+
+void MyVec::sort() {
+    for (int i = 0; i < size; i++)
+        for (int j = i + 1; j < size; j++)
+            if (elements[j] < elements[i])
+                swap(elements[i], elements[j]);
+}
+
+int& MyVec::front() {
+    return elements[0];
+}
+
+int& MyVec::back() {
+    return elements[size - 1];
+}
+
+int* MyVec::data() {
+    return elements;
+}
+
+void MyVec::red_cap() {
+    if (size < capacity / 4 && capacity > 4) {
+        int newcap = capacity / 2;
+        int* tmp = new int[newcap];
+        for (int i = 0; i < size; i++)
+            tmp[i] = elements[i];
+        delete[] elements;
+        elements = tmp;
+        capacity = newcap;
+    }
+}
 
 int main() {
-    Frac a(7,8);
-    Frac b(9,12);
-    Frac c(1);
+    MyVec v(3, 123);
+    v.print();
 
-    // Global function operator* (Frac, Frac)
-    // Member Function operator* (Frac)
-    // a * b
-    // operator*(a,b)
-    // a.operator*(b)
+    v.push(999);
+    v.push(777);
+    v.pop();
+    v.push(777);
+    v.push(333);
+    v.push(122);
+    v.push(10112554);
+    cout<<endl;
 
-    //.c.print();
+    v.print();
+    cout<<v[6] << "\n";
+    cout<<endl;
 
-    cout<<(a+b)<<endl;
-    cout<<(a-b)<<endl;
-    cout<<(a/b)<<endl;
-    if (a==b) {
-        cout<<"EDNAKVI"<<endl;
-    }else cout<<"NEEDNAKVI"<<endl;
-    cout<<(a>b)<<endl;
-    cout<<(a<b)<<endl;
+    v.sort();
+    v.print();
+    cout<<endl;
+
+    cout << "Front: " << v.front() <<endl;
+    cout << "Back: " << v.back() <<endl;
+    cout << "Data[0]: " << v.data()[0] <<endl;
+    cout<<endl;
+
+    v.pop();
+    v.pop();
+    v.print();
+    cout<<endl;
+
+    MyVec a(2, 7);
+    MyVec b(2, 1);
+    MyVec c = a + b;
+    c.print();
+
+    return 0;
 }
